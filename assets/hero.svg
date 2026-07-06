@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-label="Brain Box — self-hosted AI company brain, €0/month">
+  <defs>
+    <style>
+      .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+      .sans { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    </style>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1c1a16" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- bg -->
+  <rect width="1280" height="420" fill="#0a0a0a"/>
+  <rect width="1280" height="420" fill="url(#grid)"/>
+
+  <!-- acid corner brackets -->
+  <path d="M 24 24 h 36 M 24 24 v 36" stroke="#d9ff3d" stroke-width="3" fill="none"/>
+  <path d="M 1256 396 h -36 M 1256 396 v -36" stroke="#d9ff3d" stroke-width="3" fill="none"/>
+
+  <!-- eyebrow -->
+  <text x="72" y="92" class="mono" font-size="15" letter-spacing="6" fill="#d9ff3d">OPEN SOURCE · SELF-HOSTED · €0/MONTH</text>
+
+  <!-- wordmark -->
+  <text x="66" y="196" class="sans" font-size="104" font-weight="800" letter-spacing="-3" fill="#f4f1ea">BRAIN<tspan fill="#d9ff3d">■</tspan>BOX</text>
+
+  <!-- tagline -->
+  <text x="72" y="248" class="sans" font-size="26" fill="#8a867c">The AI company brain that lives on <tspan fill="#f4f1ea" font-weight="600">your</tspan> server.</text>
+
+  <!-- pipeline schematic -->
+  <g transform="translate(72,300)">
+    <!-- folder -->
+    <g>
+      <path d="M0 14 h20 l6 -8 h34 a6 6 0 0 1 6 6 v40 a6 6 0 0 1 -6 6 h-54 a6 6 0 0 1 -6 -6 z" fill="none" stroke="#f4f1ea" stroke-width="2.5"/>
+      <text x="33" y="82" class="mono" font-size="12" fill="#8a867c" text-anchor="middle">drop</text>
+    </g>
+    <path d="M84 36 h58" stroke="#d9ff3d" stroke-width="2.5"/>
+    <path d="M136 30 l10 6 -10 6 z" fill="#d9ff3d"/>
+    <!-- box -->
+    <g transform="translate(160,0)">
+      <rect x="0" y="4" width="64" height="56" rx="6" fill="none" stroke="#f4f1ea" stroke-width="2.5"/>
+      <circle cx="16" cy="22" r="3.5" fill="#d9ff3d"/>
+      <circle cx="32" cy="22" r="3.5" fill="#d9ff3d"/>
+      <circle cx="48" cy="22" r="3.5" fill="#d9ff3d"/>
+      <path d="M12 40 h40 M12 48 h28" stroke="#8a867c" stroke-width="2.5"/>
+      <text x="32" y="82" class="mono" font-size="12" fill="#8a867c" text-anchor="middle">local LLM</text>
+    </g>
+    <path d="M244 36 h58" stroke="#d9ff3d" stroke-width="2.5"/>
+    <path d="M296 30 l10 6 -10 6 z" fill="#d9ff3d"/>
+    <!-- chat -->
+    <g transform="translate(320,0)">
+      <path d="M0 10 a8 8 0 0 1 8 -8 h52 a8 8 0 0 1 8 8 v28 a8 8 0 0 1 -8 8 h-34 l-14 12 v-12 h-4 a8 8 0 0 1 -8 -8 z" fill="none" stroke="#f4f1ea" stroke-width="2.5"/>
+      <path d="M14 18 h40 M14 28 h26" stroke="#d9ff3d" stroke-width="2.5"/>
+      <text x="34" y="82" class="mono" font-size="12" fill="#8a867c" text-anchor="middle">ask via MCP</text>
+    </g>
+  </g>
+
+  <!-- right stats -->
+  <g transform="translate(880,96)" class="sans">
+    <text x="0" y="0" font-size="15" class="mono" fill="#8a867c" letter-spacing="2">FROM PRODUCTION, MEASURED</text>
+    <text x="0" y="52" font-size="38" font-weight="800" fill="#f4f1ea">75s <tspan font-size="17" font-weight="400" fill="#8a867c">drop → queryable knowledge</tspan></text>
+    <text x="0" y="112" font-size="38" font-weight="800" fill="#f4f1ea">10 <tspan font-size="17" font-weight="400" fill="#8a867c">formats · OCR + transcription</tspan></text>
+    <text x="0" y="172" font-size="38" font-weight="800" fill="#d9ff3d">€0<tspan font-size="17" font-weight="400" fill="#8a867c">/month · Oracle Cloud Free</tspan></text>
+    <text x="0" y="232" font-size="38" font-weight="800" fill="#f4f1ea">0 <tspan font-size="17" font-weight="400" fill="#8a867c">bytes leave your VM</tspan></text>
+  </g>
+</svg>

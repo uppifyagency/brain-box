@@ -9,3 +9,4 @@ box/backups/*
 .DS_Store
 node_modules/
 .vercel
+.env*.local

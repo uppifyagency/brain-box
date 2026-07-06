@@ -1,6 +1,10 @@
+![Brain Box — self-hosted AI company brain, €0/month](assets/hero.svg)
+
 # Brain Box — a self-hosted AI company brain that costs €0/month
 
 **Brain Box turns a free Oracle Cloud VM into a private, drag-and-drop company knowledge base your team queries in plain language from Claude Code, Codex or Gemini CLI — and no byte of your data ever leaves your server.**
+
+🌍 **Website:** [getbrainbox.vercel.app](https://getbrainbox.vercel.app) · 🇮🇹 [Guida rapida in italiano](docs/it/GUIDA-RAPIDA.md)
 
 Employees drop files (PDF, Word, Excel, scans, photos of invoices, audio, video) into a folder on their Desktop. ~75 seconds later the content is converted, versioned in git, embedded and queryable via [MCP](https://modelcontextprotocol.io) with cited answers. A local LLM (Gemma, via Ollama) extracts facts and reasons over your documents — on your hardware.
 
