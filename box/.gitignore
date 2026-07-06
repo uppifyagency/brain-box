@@ -1,0 +1,5 @@
+# segreti per-istanza e dati: MAI in git
+.env
+brain/
+inbox/
+backups/

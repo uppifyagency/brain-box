@@ -1,0 +1,129 @@
+# brain-box — un brain aziendale in una cartella. `./install.sh` fa tutto.
+#
+# Postgres (NON PGLite: single-connection, serve+ingest concorrenti impossibili — F1).
+# Ollama: su Mac riusa il NATIVO (install.sh lo rileva e setta OLLAMA_BASE_URL);
+# su VM Linux parte il container col profilo `bundled-ollama`.
+# Le porte sono SOLO loopback: l'esposizione è compito di Tailscale (GO-LIVE.md).
+name: brain-box
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gbrain
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: gbrain
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gbrain"]
+      interval: 5s
+      retries: 20
+
+  gbrain:
+    build: &engine-build
+      context: .
+      dockerfile: engine/Dockerfile
+      target: engine
+    image: brain-box-engine
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Ollama nativo sull'host (Mac)
+    environment: &gbrain-env
+      DATABASE_URL: postgresql://gbrain:${POSTGRES_PASSWORD}@postgres:5432/gbrain
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434/v1}
+      GBRAIN_HOME: /data/gbrain
+      GBRAIN_PUBLIC_URL: ${GBRAIN_PUBLIC_URL:-http://localhost:3141}
+      GBRAIN_AI_EMBED_TIMEOUT_MS: "1800000"   # 30min: su CPU-only i batch ollama (no_batch_cap) superano i 300s → timeout a vuoto su corpus grossi
+      GBRAIN_PAGE_BLOCK_BYTES: "8000000"
+      # LLM di servizio (PIANO §5.1): off = vuoti · delera/byok = install.sh li mette in .env
+      OPENAI_BASE_URL: ${LLM_BASE_URL:-}
+      OPENAI_API_KEY: ${LLM_API_KEY:-}
+      # modello chat del gateway (file/env-plane: isAvailable legge QUESTO, non models.default del DB)
+      GBRAIN_CHAT_MODEL: ${GBRAIN_CHAT_MODEL:-}
+      # F14: "none" spegne il reasoning dei gemma4 thinking (obbligatorio col 26B-A4B:
+      # col pensiero le estrazioni C2 sforano il timeout). Vuoto = upstream puro.
+      GBRAIN_CHAT_REASONING_EFFORT: ${GBRAIN_CHAT_REASONING_EFFORT:-}
+      # F12: default upstream = 20 pagine in parallelo (tarato su OpenAI cloud). Su Ollama
+      # CPU-only le richieste si accodano su UN solo slot → latenza ×20 → timeout a raffica
+      # e pagine grandi mai embeddate. Su box locale DEVE essere 1.
+      GBRAIN_EMBED_CONCURRENCY: ${GBRAIN_EMBED_CONCURRENCY:-1}
+    volumes:
+      - gbrain-home:/data/gbrain              # dotfile gbrain (i DATI stanno in Postgres)
+      - ./brain:/data/brain                   # ⭐ system of record: markdown per reparto
+    ports:
+      - "127.0.0.1:${GBRAIN_PORT:-3141}:3131"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # upload-gate (SPIKE-S1: file_upload di gbrain è localOnly → serve questo).
+  # Valida il bearer contro gbrain stesso e scrive in inbox/<reparto>/.
+  gate:
+    build: *engine-build
+    image: brain-box-engine
+    restart: unless-stopped
+    entrypoint: ["bun", "run", "/gate/upload-gate.ts"]
+    environment:
+      GATE_PORT: "3134"
+      GBRAIN_URL: http://gbrain:3131
+      DELERA_DEPTS: ${DELERA_DEPTS:-generale}
+      GATE_MAX_MB: ${GATE_MAX_MB:-200}
+    volumes:
+      - ./gate:/gate:ro
+      - ./inbox:/inbox
+      - ./status:/status:ro                   # status.json del collector → GET /status (dashboard)
+    ports:
+      - "127.0.0.1:${GATE_PORT:-3134}:3134"
+    depends_on:
+      - gbrain
+
+  # ingest-worker: inbox → convert/transcribe → brain repo → sync → embed → extract.
+  ingest:
+    build:
+      context: .
+      dockerfile: engine/Dockerfile
+      target: ingest
+    image: brain-box-ingest
+    restart: unless-stopped
+    entrypoint: ["/ingest/ingest-loop.sh"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      <<: *gbrain-env
+      DELERA_DEPTS: ${DELERA_DEPTS:-generale}
+      INGEST_INTERVAL: ${INGEST_INTERVAL:-600}
+      DELERA_WHISPER_MODEL: ${DELERA_WHISPER_MODEL:-large-v3-turbo}  # direttiva founder 2026-07-03: md puliti (12-15x su GPU/Apple; su CPU ARM misurato in Fase 2)
+    volumes:
+      - gbrain-home:/data/gbrain
+      - ./brain:/data/brain
+      - ./inbox:/inbox
+      - ./ingest:/ingest:ro
+      - whisper-cache:/root/.cache            # modelli faster-whisper
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Solo box Linux senza Ollama sull'host: `--profile bundled-ollama` (install.sh decide).
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    profiles: ["bundled-ollama"]
+    # poka-yoke HANDOFF-3 §9: senza cap, un modello troppo grosso manda in OOM
+    # l'INTERA VM (successo 2026-07-04). Col cap muore solo ollama e riparte.
+    mem_limit: ${OLLAMA_MEM_LIMIT:-19g}
+    environment:
+      # §9.f: col 26B il cold-load (155-309s) sfora da solo il timeout C2 (240s) →
+      # i modelli restano residenti. MAX_LOADED=2 = chat pinnato + slot bge/glm-ocr
+      # condiviso, così un terzo load non sfonda mai il mem_limit.
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:--1}
+      OLLAMA_MAX_LOADED_MODELS: ${OLLAMA_MAX_LOADED_MODELS:-2}
+    volumes:
+      - ollama-models:/root/.ollama
+
+volumes:
+  pg-data:
+  gbrain-home:
+  ollama-models:
+  whisper-cache:

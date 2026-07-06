@@ -1,0 +1,11 @@
+.env
+box/.env
+box/brain/
+box/inbox/*
+!box/inbox/.gitkeep
+box/backups/*
+!box/backups/.gitkeep
+*.log
+.DS_Store
+node_modules/
+.vercel

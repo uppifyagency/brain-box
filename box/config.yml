@@ -1,0 +1,18 @@
+# brain-box — l'UNICO file che l'admin tocca. Poi: ./install.sh
+# Righe piatte "chiave: valore" (niente annidamenti: le legge anche lo script).
+
+azienda: Delera
+
+# I reparti = le sottocartelle della cartella drop e i source del brain.
+# Separati da spazi. Aggiungerne uno dopo: aggiungilo qui e rilancia ./install.sh.
+reparti: generale vendite marketing
+
+# tailnet = solo rete Tailscale privata (default, zero superficie internet)
+# public  = Tailscale Funnel sul solo /mcp — NECESSARIO per claude.ai (telefono/web)
+expose: tailnet
+
+# LLM di servizio (dream cycle, think, extract_facts — PIANO §5.1):
+#   off    = solo retrieval, zero testo esce dal box
+#   delera = API gestita da Delera a costo ridotto (metti la chiave in .env: LLM_API_KEY)
+#   byok   = chiave del cliente (metti LLM_BASE_URL e LLM_API_KEY in .env)
+llm: off
